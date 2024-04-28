@@ -7,4 +7,7 @@ sky:
     username: root
     password: root
   alioss:
-
+    endpoint: oss-cn-shenzhen.aliyuncs.com
+    access-key-id: LTAI5tLx7tS6EAPoD2w7LMz4
+    access-key-secret: XQFS1M9sNVfyQvRTBZlccWRaLoBKDn
+    bucket-name: it-cjy
