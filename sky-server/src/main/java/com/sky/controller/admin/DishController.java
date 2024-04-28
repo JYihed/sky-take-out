@@ -54,10 +54,10 @@ public class DishController {
      * @return
      */
     @ApiOperation("菜品删除")
-    @DeleteMapping()
+    @DeleteMapping
     public Result delete(@RequestParam List<Long> ids){
         dishService.deleteBatch(ids);
-        return null;
+        return Result.success();
     }
 
     /**
@@ -82,5 +82,18 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO){
         dishService.updateWithFlavor(dishDTO);
         return Result.success();
+    }
+
+    /**
+     * 根据分类查询菜品
+     * @param categoryId
+     * @return
+     */
+    @ApiOperation("根据分类查询菜品")
+    @GetMapping("/list")
+    public Result<List<Dish>> getByCategory(Long categoryId){
+        List<Dish> dishes = dishService.getByCategory(categoryId);
+
+        return Result.success(dishes);
     }
 }
