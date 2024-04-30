@@ -11,9 +11,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
 
 @Api(tags = "菜品相关接口")
 @RestController
@@ -23,6 +26,8 @@ public class DishController {
 
     @Autowired
     private DishService dishService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 新增菜品
@@ -33,6 +38,8 @@ public class DishController {
     @PostMapping
     public Result save(@RequestBody DishDTO dishDTO){
         dishService.saveWithFlavor(dishDTO);
+        String key = "dish_"+dishDTO.getCategoryId();
+        cleanCache(key);
         return Result.success();
     }
 
@@ -57,6 +64,7 @@ public class DishController {
     @DeleteMapping
     public Result delete(@RequestParam List<Long> ids){
         dishService.deleteBatch(ids);
+        cleanCache("dish_*");
         return Result.success();
     }
 
@@ -81,8 +89,25 @@ public class DishController {
     @PutMapping
     public Result update(@RequestBody DishDTO dishDTO){
         dishService.updateWithFlavor(dishDTO);
+        cleanCache("dish_*");
         return Result.success();
     }
+
+    /**
+     * 菜品起售停售
+     * @param status
+     * @param id
+     * @return
+     */
+    @ApiOperation("菜品起售停售")
+    @PostMapping("/status/{status}")
+    public Result<String> startOrStop(@PathVariable Integer status,Long id){
+        dishService.startOrStop(status,id);
+        cleanCache("dish_*");
+        return Result.success();
+    }
+
+
 
     /**
      * 根据分类查询菜品
@@ -95,5 +120,10 @@ public class DishController {
         List<Dish> dishes = dishService.getByCategory(categoryId);
 
         return Result.success(dishes);
+    }
+
+    private void cleanCache(String patten){
+        Set<String> keys = stringRedisTemplate.keys(patten);
+        stringRedisTemplate.delete(keys);
     }
 }
