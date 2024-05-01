@@ -11,3 +11,6 @@ sky:
     access-key-id: LTAI5tGQTvqGdb9KXFKzFuaE
     access-key-secret: bt0SnenrMvYwd5SHJBd0DSeEeaamoI
     bucket-name: it-cjy
+  wechat:
+    appid: wxbe6c5d7328391802
+    secret: 8db7c8ea67faee8ea4385c934780215c
