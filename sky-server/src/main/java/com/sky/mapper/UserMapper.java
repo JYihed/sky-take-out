@@ -4,6 +4,8 @@ import com.sky.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Map;
+
 @Mapper
 public interface UserMapper {
 
@@ -13,4 +15,7 @@ public interface UserMapper {
 
 
     void insert(User user);
+
+
+    Integer countByMap(Map map);
 }

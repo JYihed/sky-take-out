@@ -2,8 +2,10 @@ package com.sky.service.impl;
 
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.TurnoverReportVO;
+import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private OrderMapper orderMapper;
 
+    @Autowired
+    private UserMapper userMapper;
+
     /**
      * 营业额统计
      * @param begin
@@ -32,29 +37,88 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end) {
-        List<LocalDate> dateList = new ArrayList<>();
-        dateList.add(begin);
-        while (!begin.equals(end)){
-            begin=begin.plusDays(1);
-            dateList.add(begin);
-        }
+        List<LocalDate> dateList = getTimeList(begin,end);
+
         List<Double> turnoverList = new ArrayList<>();
+
         for (LocalDate date : dateList) {
+
             LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
             LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
             Map map = new HashMap();
             map.put("begin",beginTime);
             map.put("end",endTime);
             map.put("status", Orders.COMPLETED);
+
             Double turnover = orderMapper.sumByMap(map);
             turnover = (turnover == null ? 0.0 : turnover);
             turnoverList.add(turnover);
         }
+
         TurnoverReportVO turnoverReportVO = new TurnoverReportVO();
         String list = StringUtils.join(dateList, ",");
         String tlist = StringUtils.join(turnoverList, ",");
+
         turnoverReportVO.setDateList(list);
         turnoverReportVO.setTurnoverList(tlist);
         return turnoverReportVO;
+    }
+
+
+    /**
+     * 用户统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = getTimeList(begin,end);
+
+        List<Integer> newUserList = new ArrayList<>();
+        List<Integer> totalUserList = new ArrayList<>();
+
+        for (LocalDate date : dateList) {
+
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            Map tmap = new HashMap();
+            Map nmap = new HashMap();
+
+            tmap.put("begin",beginTime);
+            Integer tuser = userMapper.countByMap(tmap);
+            totalUserList.add(tuser);
+
+            nmap.put("begin",beginTime);
+            nmap.put("end",endTime);
+            Integer nuser = userMapper.countByMap(nmap);
+            newUserList.add(nuser);
+
+        }
+
+        UserReportVO userReportVO = new UserReportVO();
+
+        String dlist = StringUtils.join(dateList, ",");
+        String nlist = StringUtils.join(newUserList, ",");
+        String tlist = StringUtils.join(totalUserList,",");
+
+        userReportVO.setDateList(dlist);
+        userReportVO.setTotalUserList(tlist);
+        userReportVO.setNewUserList(nlist);
+
+        return userReportVO;
+    }
+
+
+    private List<LocalDate> getTimeList(LocalDate begin, LocalDate end){
+        List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
+        while (!begin.equals(end)){
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+        return dateList;
     }
 }
