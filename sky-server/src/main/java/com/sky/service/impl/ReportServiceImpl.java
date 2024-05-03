@@ -1,10 +1,14 @@
 package com.sky.service.impl;
 
+import com.alibaba.druid.support.json.JSONUtils;
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
+import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,6 +34,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
 
     /**
      * 营业额统计
@@ -173,6 +181,42 @@ public class ReportServiceImpl implements ReportService {
         orderReportVO.setOrderCompletionRate(ordercomplete);
 
         return orderReportVO;
+    }
+
+
+    /**
+     * 销量top10
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        List<GoodsSalesDTO> salesList = orderMapper.getSalesList(beginTime, endTime);
+        List<String> nameList = salesList.stream().map(GoodsSalesDTO::getName).collect(Collectors.toList());
+        List<Integer> numberList = salesList.stream().map(GoodsSalesDTO::getNumber).collect(Collectors.toList());
+
+
+//        List<String> nameList = new ArrayList<>();
+//        List<String> numberList = new ArrayList<>();
+//
+//        for (GoodsSalesDTO good : salesList) {
+//            nameList.add(good.getName());
+//            numberList.add(String.valueOf(good.getNumber()));
+//        }
+
+        String naList = StringUtils.join(nameList, ",");
+        String nuList = StringUtils.join(numberList, ",");
+
+        SalesTop10ReportVO salesVO = new SalesTop10ReportVO();
+        salesVO.setNameList(naList);
+        salesVO.setNumberList(nuList);
+
+        return salesVO;
     }
 
 
