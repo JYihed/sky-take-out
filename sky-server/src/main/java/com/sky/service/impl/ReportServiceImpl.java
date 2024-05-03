@@ -4,6 +4,7 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
@@ -109,6 +110,63 @@ public class ReportServiceImpl implements ReportService {
         userReportVO.setNewUserList(nlist);
 
         return userReportVO;
+    }
+
+    /**
+     * 订单统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public OrderReportVO getorderStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = getTimeList(begin,end);
+
+        List<Integer> orderCountList = new ArrayList<>();
+        List<Integer> vaildOrderCountList = new ArrayList<>();
+
+
+        for (LocalDate date : dateList) {
+
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            Map map = new HashMap();
+            map.put("begin",beginTime);
+            map.put("end",endTime);
+            Integer oderCount = orderMapper.countByMap(map);
+            orderCountList.add(oderCount);
+
+            map.put("status",Orders.COMPLETED);
+            Integer vailOderCount = orderMapper.countByMap(map);
+            vaildOrderCountList.add(vailOderCount);
+
+
+        }
+
+
+        OrderReportVO orderReportVO = new OrderReportVO();
+
+        String dlist = StringUtils.join(dateList, ",");
+        String olist = StringUtils.join(orderCountList, ",");
+        String vlist = StringUtils.join(vaildOrderCountList, ",");
+
+        orderReportVO.setDateList(dlist);
+        orderReportVO.setOrderCountList(olist);
+        orderReportVO.setValidOrderCountList(vlist);
+
+        Integer orderCount = orderCountList.stream().reduce(Integer::sum).get();
+        orderReportVO.setTotalOrderCount(orderCount);
+        Integer vorderCount = vaildOrderCountList.stream().reduce(Integer::sum).get();
+        orderReportVO.setValidOrderCount(vorderCount);
+
+        Double ordercomplete = (double) vorderCount/orderCount;
+        if(vorderCount == 0){
+            ordercomplete = 0.0;
+        }
+        orderReportVO.setOrderCompletionRate(ordercomplete);
+
+        return orderReportVO;
     }
 
 

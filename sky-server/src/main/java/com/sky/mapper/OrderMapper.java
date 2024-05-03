@@ -32,10 +32,10 @@ public interface OrderMapper {
     @Update("update orders set status = #{status} where id = #{id}")
     void update(Orders orders);
 
-
     @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
     List<Orders> getByStatusAndOrderTime(Integer status, LocalDateTime orderTime);
 
-
     Double sumByMap(Map map);
+
+    Integer countByMap(Map map);
 }
