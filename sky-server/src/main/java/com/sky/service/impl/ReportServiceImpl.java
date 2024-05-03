@@ -88,13 +88,19 @@ public class ReportServiceImpl implements ReportService {
             Map tmap = new HashMap();
             Map nmap = new HashMap();
 
-            tmap.put("begin",beginTime);
+            tmap.put("end",endTime);
             Integer tuser = userMapper.countByMap(tmap);
+            if(tuser == null){
+                tuser=0;
+            }
             totalUserList.add(tuser);
 
             nmap.put("begin",beginTime);
             nmap.put("end",endTime);
             Integer nuser = userMapper.countByMap(nmap);
+            if(nuser == null){
+                nuser=0;
+            }
             newUserList.add(nuser);
 
         }
